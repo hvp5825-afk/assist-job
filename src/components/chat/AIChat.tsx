@@ -44,45 +44,26 @@ export function AIChat({ userRole }: AIChatProps) {
     setInputMessage('');
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const { sendAIMessage } = await import('@/lib/api');
+      const data = await sendAIMessage(inputMessage, userRole);
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: getAIResponse(inputMessage, userRole),
+        content: data.reply,
         role: 'assistant',
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, aiResponse]);
+    } catch {
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        content: 'Sorry, something went wrong. Please try again.',
+        role: 'assistant',
+        timestamp: new Date(),
+      }]);
+    } finally {
       setIsLoading(false);
-    }, 1000);
-  };
-
-  const getAIResponse = (message: string, role: 'worker' | 'recruiter'): string => {
-    const lowerMessage = message.toLowerCase();
-
-    if (role === 'worker') {
-      if (lowerMessage.includes('resume')) {
-        return "I'd be happy to help you with your resume! Here are some key tips:\n\n1. Keep it concise (1-2 pages)\n2. Use action verbs and quantify achievements\n3. Tailor it to each job application\n4. Include relevant skills and keywords\n\nWould you like me to help you with a specific section of your resume?";
-      }
-      if (lowerMessage.includes('interview')) {
-        return "Great question! Here are some interview preparation tips:\n\n1. Research the company thoroughly\n2. Practice common questions (Tell me about yourself, Why this role?)\n3. Prepare STAR method examples\n4. Have questions ready for the interviewer\n5. Practice your elevator pitch\n\nWould you like me to help you practice answers to specific questions?";
-      }
-      if (lowerMessage.includes('job') || lowerMessage.includes('career')) {
-        return "I can help you with your job search! Consider these strategies:\n\n1. Identify your target roles and companies\n2. Optimize your LinkedIn profile\n3. Network within your industry\n4. Apply to quality positions that match your skills\n5. Follow up on applications\n\nWhat specific aspect of job searching would you like to focus on?";
-      }
-    } else {
-      if (lowerMessage.includes('job description')) {
-        return "I can help you create compelling job descriptions! Here's what makes them effective:\n\n1. Clear, specific job title\n2. Engaging company overview\n3. Detailed responsibilities and requirements\n4. Information about benefits and culture\n5. Inclusive language\n\nWould you like me to help you write or review a specific job description?";
-      }
-      if (lowerMessage.includes('candidate') || lowerMessage.includes('hiring')) {
-        return "Here are some best practices for candidate evaluation:\n\n1. Define clear evaluation criteria\n2. Use structured interviews\n3. Check references thoroughly\n4. Consider cultural fit alongside skills\n5. Provide timely feedback\n\nWhat specific aspect of the hiring process would you like to discuss?";
-      }
-      if (lowerMessage.includes('screen') || lowerMessage.includes('interview')) {
-        return "Effective candidate screening involves:\n\n1. Phone/video screening for basic qualifications\n2. Skills assessment relevant to the role\n3. Behavioral interview questions\n4. Technical evaluation when applicable\n5. Reference checks\n\nWould you like help creating screening questions for a specific role?";
-      }
     }
-
-    return "I understand you're asking about " + message + ". Could you provide more specific details so I can give you more targeted advice? I'm here to help with all your " + (role === 'worker' ? 'career development' : 'recruitment') + " needs!";
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
